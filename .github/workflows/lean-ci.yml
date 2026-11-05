@@ -98,9 +98,9 @@ jobs:
             sha256sum VerifiableAIAssurance.lean ResponsibilityOS.lean adic_cyber_assurance_gateway.lean
           } | tee build-evidence/provenance.txt
           lake exe cache get \
-            Mathlib/CategoryTheory/Grothendieck.lean \
-            Mathlib/CategoryTheory/Adjunction/Basic.lean \
-            Mathlib/CategoryTheory/Functor/FullyFaithful.lean
+            Mathlib.CategoryTheory.Grothendieck \
+            Mathlib.CategoryTheory.Adjunction.Basic \
+            Mathlib.CategoryTheory.Functor.FullyFaithful
           lake build 2>&1 | tee build-evidence/build.log
           lake env lean VerifiableAIAssurance.lean 2>&1 | tee build-evidence/axioms.log
           grep -F 'Axiom whitelist checked for' build-evidence/axioms.log
