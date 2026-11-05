@@ -201,10 +201,13 @@ theorem combined_view_is_sufficient :
     goal (fun w => origin w = true) (fun w => execution w = true)
     (fun w => responsibility w = true) coverage
   · intro x y h
+    change (origin x = true) ↔ (origin y = true)
     rw [h]
   · intro x y h
+    change (execution x = true) ↔ (execution y = true)
     rw [h]
   · intro x y h
+    change (responsibility x = true) ↔ (responsibility y = true)
     rw [h]
 
 /-- Minimality is relative to deleting these observations on this case family.
@@ -240,7 +243,8 @@ def traceView {A B : Type} (view : A → B) :
   map_id _ := rfl
   map_comp := by
     intro X Y Z f g
-    change (f ++ g).map view = f.map view ++ g.map view
+    change List.map view ((show List A from f) ++ (show List A from g)) =
+      List.map view (show List A from f) ++ List.map view (show List A from g)
     simp only [List.map_append]
 
 def selectedPolicy {A S : Type} (summary : A → S) :
