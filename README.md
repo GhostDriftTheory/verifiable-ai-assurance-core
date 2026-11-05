@@ -62,7 +62,7 @@ GitHubへのpush、pull request、手動実行で次を行います。
 ローカルで再現する場合は、ワークフローの「Retrieve the exact already-public kernel sources」の取得・照合処理を同じ作業ディレクトリで実行した後、次を実行します。Git、curl、elanが必要です。
 
 ```bash
-lake exe cache get Mathlib/CategoryTheory/Grothendieck.lean Mathlib/CategoryTheory/Adjunction/Basic.lean Mathlib/CategoryTheory/Functor/FullyFaithful.lean
+lake exe cache get Mathlib.CategoryTheory.Grothendieck Mathlib.CategoryTheory.Adjunction.Basic Mathlib.CategoryTheory.Functor.FullyFaithful
 lake build
 lake env lean VerifiableAIAssurance.lean
 ```
