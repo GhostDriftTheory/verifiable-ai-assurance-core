@@ -1,0 +1,115 @@
+name: Lean verification
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lean-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out the public theory
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Check the six-file publication boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess
+          expected = {
+              'VerifiableAIAssurance.lean', 'README.md', 'lakefile.lean',
+              'lean-toolchain', 'lake-manifest.json', '.github/workflows/lean-ci.yml',
+          }
+          tracked = set(filter(None, subprocess.check_output(
+              ['git', 'ls-files', '-z']).decode('utf-8').split('\0')))
+          if tracked != expected:
+              raise SystemExit(f'Unexpected files: {sorted(tracked-expected)}; '
+                               f'missing files: {sorted(expected-tracked)}')
+          print('The public source tree contains exactly the six declared files.')
+          PY
+
+      - name: Retrieve the exact already-public kernel sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import pathlib
+          import subprocess
+          sources = [
+              ('ResponsibilityOS.lean', 'responsibility-os-kernel',
+               '3416b4f542addcfdf2ac8304c04d1d69bdbcfbf5',
+               '34bdac79ffdba54d8464daca4a5ed6ae21e2abd5'),
+              ('adic_cyber_assurance_gateway.lean', 'adic-cyber-assurance-gateway',
+               'b539f21bd94db715925f2c33fce99a54c4b9d261',
+               'b7ed90059b4b34e9b753919c23263ddd124b81d1'),
+          ]
+          for name, repo, commit, expected in sources:
+              url = f'https://raw.githubusercontent.com/GhostDriftTheory/{repo}/{commit}/{name}'
+              tmp = pathlib.Path(name + '.download')
+              subprocess.run(['curl', '--proto', '=https', '--tlsv1.2',
+                              '--fail', '--location', '--retry', '3',
+                              '--connect-timeout', '20', '--max-time', '180',
+                              url, '--output', str(tmp)], check=True)
+              data = tmp.read_bytes()
+              actual = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+              if actual != expected:
+                  tmp.unlink()
+                  raise SystemExit(f'Upstream content mismatch: {name}')
+              tmp.replace(name)
+              print(f'Checked public source: {name} {actual}')
+          PY
+
+      - name: Install the pinned Lean toolchain manager
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
+            --connect-timeout 20 --max-time 180 \
+            https://github.com/leanprover/elan/releases/download/v4.1.2/elan-x86_64-unknown-linux-gnu.tar.gz \
+            --output "$tmp/elan.tar.gz"
+          tar -xzf "$tmp/elan.tar.gz" -C "$tmp"
+          "$tmp/elan-init" -y --default-toolchain none --no-modify-path
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Compile the theory and check every theorem's axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-evidence
+          {
+            git rev-parse HEAD
+            cat lean-toolchain
+            lean --version
+            sha256sum VerifiableAIAssurance.lean ResponsibilityOS.lean adic_cyber_assurance_gateway.lean
+          } | tee build-evidence/provenance.txt
+          lake exe cache get \
+            Mathlib/CategoryTheory/Grothendieck.lean \
+            Mathlib/CategoryTheory/Adjunction/Basic.lean \
+            Mathlib/CategoryTheory/Functor/FullyFaithful.lean
+          lake build 2>&1 | tee build-evidence/build.log
+          lake env lean VerifiableAIAssurance.lean 2>&1 | tee build-evidence/axioms.log
+          grep -F 'Axiom whitelist checked for' build-evidence/axioms.log
+
+      - name: Retain the actual verification logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: lean-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build-evidence/
+          if-no-files-found: warn
+          retention-days: 30
