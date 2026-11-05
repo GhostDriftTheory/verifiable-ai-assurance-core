@@ -1,6 +1,6 @@
 # Formal Foundations of Verifiable AI Assurance
 
-[![Lean verification](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml/badge.svg)](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml)
+[![Lean verification](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml/badge.svg?branch=main)](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml)
 
 **AIの判断・実行を信頼する際、真正性・実行の適切さ・責任の追跡可能性のうち、何を検証できなければならないか。**
 
@@ -49,7 +49,7 @@ EU AI Actや広島AIプロセスを背景に、検証可能な保証をどのよ
 
 ## 検証
 
-**本配布時点では、Leanコンパイルと公理監査の成功は未確認です。** 検証の根拠は、各コミットに対するGitHub Actionsの実行結果とログです。設定ファイルの存在やバッジの掲載だけを検証成功とは扱いません。
+**Lean 4.26.0によるビルドと公理監査は成功しています。** 2026年11月5日の[GitHub Actions 実行 #4](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/runs/41976316489)（コミット `5971b5e45dbc7d895272059971724372aec9b4f4`）では、633ジョブのビルドが完了し、**本リポジトリの50定理について公理ホワイトリスト検査が成功**しました。これは明示した数学モデルに関する検証結果であり、暗号実装の安全性、現実のAIシステムの安全性、法令適合性を認証するものではありません。以降の変更については最新コミットのActions結果とログを確認してください。バッジはキャッシュの影響で最新結果の反映が遅れる場合があります。
 
 GitHubへのpush、pull request、手動実行で次を行います。
 
