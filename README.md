@@ -1,12 +1,14 @@
 # Formal Foundations of Verifiable AI Assurance
 
+[![Lean verification](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml/badge.svg?branch=main)](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/workflows/lean-ci.yml)
+
 **「AIが実行してよいと判断した」を、「どの条件を満たすから採用できるか、第三者が確かめられる」へ。**
 
 本リポジトリは、既存の認証・セキュリティ・運用基盤が持つ証拠を、**業務上の許可条件と、実行後の監査で確認する事項に結び付ける形式化ソース**です。新しい情報が必要な場合と、情報は既にあるが適切な検証が必要な場合を分け、既存公開のCyber Assurance GatewayとResponsibility OSに数学的に接続します。
 
 出発点は「3製品を導入すべき」という結論ではありません。外部の要求から目標を定め、**足りる情報・足りない情報・正しい検証・履歴に残すべき区別**を、反例と証明の両側から扱います。公開物は基礎理論であり、製品や接続アダプターではありません。
 
-**検証状態：本配布版のLeanビルド・公理監査は未実行です。** 検証済みとは表示していません。対象ソースの検証方法と、成功判定の条件は第6節に記載しています。
+**検証状態：Lean 4.26.0によるビルドと公理ホワイトリスト監査が成功しています。** 2026年11月6日の[GitHub Actions #8](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/runs/42153140076)（コミット `95d1440b9a6ac42d7fd0dbf169b469c2b399087c`）で、633ジョブのビルドと86定理の公理監査が完了しました。これは当該コミットの形式モデルに対する結果であり、実機の安全性や法令適合性の保証ではありません。詳細は第6節に記載しています。
 
 ## 1. 協業で加えられるもの
 
@@ -128,7 +130,9 @@ RFC 9334 §8.2は、同じメーカーの健全な端末であっても、企業
 
 ## 6. 検証状態と再現
 
-**この配布版のLeanビルド・公理監査は未実行です。** ソース読解や有限モデルでの整合確認を、Leanの成功結果として扱いません。旧コミットを指す成功バッジも、この配布版の証明としては表示していません。
+**検証済みの対象：コミット [`95d1440b9a6ac42d7fd0dbf169b469c2b399087c`](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/commit/95d1440b9a6ac42d7fd0dbf169b469c2b399087c)。** [GitHub Actions「Lean verification」#8](https://github.com/GhostDriftTheory/verifiable-ai-assurance-core/actions/runs/42153140076)（2026年11月6日）で、Lean 4.26.0による**633ジョブのビルド成功**、**86定理の公理ホワイトリスト監査成功**を確認しました。監査ログは `Axiom whitelist checked for 86 theorems.` と記録しています。86定理にはLean生成の補助定理も含まれます。
+
+この成功は**上記コミットのソース**に対応します。以降の変更については、変更後のコミットに対応するGitHub Actionsの実行結果を確認してください。先頭のバッジは `main` ブランチの検証状態を示し、過去の成功を新しい変更に自動的に適用するものではありません。
 
 Lean 4.26.0と固定した依存関係を使用します。既存のGitHub Actionsは、push・pull request・手動実行で次を検査します。
 
