@@ -380,6 +380,8 @@ theorem one_observation_can_suffice :
       ¬ Sufficient (fun _b : Bool => ()) (fun b => b = true) := by
   constructor
   · intro x y same
+    change x = y at same
+    change (x = true ↔ y = true)
     rw [same]
   · intro sufficient
     have impossible : (false : Bool) = true :=
@@ -397,6 +399,7 @@ theorem verdict_sufficiency_need_not_preserve_each_requirement :
       (fun w => w.1 = true) := by
   refine ⟨⟨(true, true), rfl, rfl⟩, ?_, ?_⟩
   · intro x y same
+    change (x.1 && x.2) = (y.1 && y.2) at same
     change ((x.1 && x.2) = true) ↔ ((y.1 && y.2) = true)
     rw [same]
   · intro sufficient
@@ -480,7 +483,7 @@ theorem policy_check_exact :
     ExactJudge (fun w : Case => w) policy (fun v => policyCheck v = true) := by
   intro w
   rcases w with ⟨healthy, owned⟩
-  cases healthy <;> cases owned <;> decide
+  cases healthy <;> cases owned <;> simp [policy, policyCheck]
 
 /-- The general information theorem is instantiated, not merely named. -/
 theorem full_observation_is_sufficient :
@@ -507,7 +510,7 @@ theorem policy_check_accepts_and_rejects :
     policyCheck (true, true) = true ∧
     policyCheck (true, false) = false ∧
     policy (true, true) ∧ ¬ policy (true, false) := by
-  decide
+  simp [policy, policyCheck]
 
 /-- Ownership may already be recoverable from existing information. There is
 then no argument for a new source or a new vendor based on this example. -/
@@ -516,8 +519,9 @@ theorem existing_ownership_information_is_enough {V : Type}
     (faithful : ∀ w, recoverOwnership (existing w) = w.2) :
     Sufficient (fun w => (w.1, existing w)) policy := by
   intro x y same
-  have health : x.1 = y.1 := congrArg Prod.fst same
-  have source : existing x = existing y := congrArg Prod.snd same
+  change (x.1, existing x) = (y.1, existing y) at same
+  have health : x.1 = y.1 := congrArg (fun p : Bool × V => p.1) same
+  have source : existing x = existing y := congrArg (fun p : Bool × V => p.2) same
   have ownership : x.2 = y.2 :=
     (faithful x).symm.trans ((congrArg recoverOwnership source).trans (faithful y))
   change (x.1 = true ∧ x.2 = true) ↔ (y.1 = true ∧ y.2 = true)
@@ -832,8 +836,9 @@ theorem published_read_example_satisfies_allow_core :
       "subject:demo" 1 := by
   refine ⟨?_, ?_, ADIC.NonVacuity.concrete_phi_overapprox, ?_, ?_,
     ADIC.NonVacuity.concrete_execution_path_bound⟩
-  · decide
-  · decide
+  · simp [ADIC.IdentityValid, ADIC.NonVacuity.concreteOperation]
+  · simp [ADIC.AuthorityAllows, ADIC.NonVacuity.concreteOperation,
+      ADIC.NonVacuity.concreteBefore]
   · rw [ADIC.NonVacuity.concrete_risk_low]
     intro impossible
     cases impossible
@@ -886,6 +891,7 @@ theorem published_record_is_sufficient_for_selected_record_questions {I : Type}
     Requirements.FamilySufficient (fun w : ADIC.ADICWitness => w.record)
       (fun i w => questions i w.record) := by
   intro i x y same
+  change x.record = y.record at same
   change questions i x.record ↔ questions i y.record
   rw [same]
 
